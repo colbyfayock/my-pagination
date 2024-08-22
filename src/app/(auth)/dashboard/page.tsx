@@ -12,9 +12,13 @@ import { Badge } from '@/components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import Container from '@/components/Container';
 
+const INVOICES_PER_PAGE = 10;
+
 export default async function Dashboard() {
   const { userId } = auth();
   if ( !userId ) return null;
+
+  const currentPage = 2;
 
   const result = await db.select().from(Invoices)
     .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
@@ -23,7 +27,9 @@ export default async function Dashboard() {
         eq(Invoices.user_id, userId),
         isNull(Invoices.organization_id)
       )
-    );
+    )
+    .limit(INVOICES_PER_PAGE)
+    .offset(INVOICES_PER_PAGE * (currentPage - 1));
 
   const invoices = result?.map(({ invoices, customers}) => {
     return {
