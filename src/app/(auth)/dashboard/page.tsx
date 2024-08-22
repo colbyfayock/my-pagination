@@ -14,11 +14,11 @@ import Container from '@/components/Container';
 
 const INVOICES_PER_PAGE = 10;
 
-export default async function Dashboard() {
+export default async function Dashboard({ searchParams }: { searchParams: { page: string | undefined }}) {
   const { userId } = auth();
   if ( !userId ) return null;
 
-  const currentPage = 2;
+  const currentPage = searchParams?.page ? parseInt(searchParams.page) : 1;
 
   const result = await db.select().from(Invoices)
     .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
