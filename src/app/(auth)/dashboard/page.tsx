@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import Container from '@/components/Container';
 import { Button } from '@/components/ui/Button';
+import Pagination from '@/components/Pagination';
+import { Suspense } from 'react';
 
 const INVOICES_PER_PAGE = 10;
 
@@ -126,71 +128,12 @@ export default async function Dashboard({ searchParams }: { searchParams: { page
         </TableBody>
       </Table>
 
-      <ul className="flex justify-between items-center text-sm mt-8">
-        <li>
-          { currentPage > 1 && (
-            <Link href={{
-              pathname: '/dashboard',
-              query: {
-                page: currentPage - 1
-              }
-            }}>
-              <span className="flex items-center gap-1">
-                <ChevronLeft className="w-5 h-5" /> Previous
-              </span>
-            </Link>
-          )}
-          { currentPage <= 1 && (
-            <span className="text-zinc-400 flex items-center gap-1">
-              <ChevronLeft className="w-5 h-5" /> Previous
-            </span>
-          )}
-        </li>
-
-        { typeof invoicesCount === 'number' && (
-          <li className="flex-grow flex justify-center">
-            <ul className="flex items-center gap-3">
-              {[...new Array(Math.ceil(invoicesCount / INVOICES_PER_PAGE))].map((_, index) => {
-                const page = index + 1;
-                return (
-                  <li key={page}>
-                    <Button variant={page === currentPage ? 'default' : 'outline'} asChild size="sm" className="h-auto px-2.5 py-1">
-                      <Link href={{
-                        pathname: '/dashboard',
-                        query: {
-                          page
-                        }
-                      }}>
-                        { page }
-                      </Link>
-                    </Button>
-                  </li>
-                )
-              })}
-            </ul>
-          </li>
-        )}
-
-        <li>
-          { currentPage < Math.ceil(invoicesCount / INVOICES_PER_PAGE) && (
-            <Link href={{
-              pathname: '/dashboard',
-              query: {
-                page: currentPage + 1
-              }
-            }}>
-              <span className="flex items-center gap-1">
-              Next <ChevronRight className="w-5 h-5" />
-              </span>
-            </Link>
-          )}
-          { currentPage >= Math.ceil(invoicesCount / INVOICES_PER_PAGE) && (
-            <span className="text-zinc-400 flex items-center gap-1">
-              Next <ChevronRight className="w-5 h-5" />
-            </span>
-          )}
-        </li>
-      </ul>
+      <Suspense fallback={<>Loading...</>}>
+        <Pagination
+          currentPage={currentPage}
+          perPage={INVOICES_PER_PAGE}
+        />
+      </Suspense>
 
     </Container>
   );
