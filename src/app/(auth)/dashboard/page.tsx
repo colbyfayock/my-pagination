@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import { PlusCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import { auth, } from '@clerk/nextjs/server';
-import { eq, and, isNull } from 'drizzle-orm'
+import { eq, and, isNull, count } from 'drizzle-orm'
 
 import { db } from '@/db';
 import { Invoices, Customers } from '@/db/schema';
@@ -11,6 +11,7 @@ import { AVAILABLE_STATUSES } from '@/data/invoices';
 import { Badge } from '@/components/ui/Badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import Container from '@/components/Container';
+import { Button } from '@/components/ui/Button';
 
 const INVOICES_PER_PAGE = 10;
 
@@ -30,6 +31,17 @@ export default async function Dashboard({ searchParams }: { searchParams: { page
     )
     .limit(INVOICES_PER_PAGE)
     .offset(INVOICES_PER_PAGE * (currentPage - 1));
+
+  const [{ count: invoicesCount }] = await db.select({
+    count: count()
+  }).from(Invoices)
+    .innerJoin(Customers, eq(Invoices.customer_id, Customers.id))
+    .where(
+      and(
+        eq(Invoices.user_id, userId),
+        isNull(Invoices.organization_id)
+      )
+    );
 
   const invoices = result?.map(({ invoices, customers}) => {
     return {
@@ -113,6 +125,73 @@ export default async function Dashboard({ searchParams }: { searchParams: { page
           })}
         </TableBody>
       </Table>
+
+      <ul className="flex justify-between items-center text-sm mt-8">
+        <li>
+          { currentPage > 1 && (
+            <Link href={{
+              pathname: '/dashboard',
+              query: {
+                page: currentPage - 1
+              }
+            }}>
+              <span className="flex items-center gap-1">
+                <ChevronLeft className="w-5 h-5" /> Previous
+              </span>
+            </Link>
+          )}
+          { currentPage <= 1 && (
+            <span className="text-zinc-400 flex items-center gap-1">
+              <ChevronLeft className="w-5 h-5" /> Previous
+            </span>
+          )}
+        </li>
+
+        { typeof invoicesCount === 'number' && (
+          <li className="flex-grow flex justify-center">
+            <ul className="flex items-center gap-3">
+              {[...new Array(Math.ceil(invoicesCount / INVOICES_PER_PAGE))].map((_, index) => {
+                const page = index + 1;
+                return (
+                  <li key={page}>
+                    <Button variant={page === currentPage ? 'default' : 'outline'} asChild size="sm" className="h-auto px-2.5 py-1">
+                      <Link href={{
+                        pathname: '/dashboard',
+                        query: {
+                          page
+                        }
+                      }}>
+                        { page }
+                      </Link>
+                    </Button>
+                  </li>
+                )
+              })}
+            </ul>
+          </li>
+        )}
+
+        <li>
+          { currentPage < Math.ceil(invoicesCount / INVOICES_PER_PAGE) && (
+            <Link href={{
+              pathname: '/dashboard',
+              query: {
+                page: currentPage + 1
+              }
+            }}>
+              <span className="flex items-center gap-1">
+              Next <ChevronRight className="w-5 h-5" />
+              </span>
+            </Link>
+          )}
+          { currentPage >= Math.ceil(invoicesCount / INVOICES_PER_PAGE) && (
+            <span className="text-zinc-400 flex items-center gap-1">
+              Next <ChevronRight className="w-5 h-5" />
+            </span>
+          )}
+        </li>
+      </ul>
+
     </Container>
   );
 }
