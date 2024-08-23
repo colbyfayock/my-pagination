@@ -1,12 +1,10 @@
 # Pagination in React
 
-Demo for tutorial
+Demo for tutorial [Pagination in React with Next.js and Drizzle ORM](https://www.youtube.com/watch?v=RlzrXSVYPIw)
 
-📝 Article: 
+📝 Article: https://spacejelly.dev/posts/pagination-in-react-with-next-js-drizzle-orm
 
-📺 YouTube: 
-
-🚀 Demo: 
+📺 YouTube: https://www.youtube.com/watch?v=RlzrXSVYPIw
 
 ## More tutorials and walkthroughs
 
